@@ -399,14 +399,14 @@ Which would then place the following Sql Query on the console:
 Select   *
   From   OpenJson(@Json)
     With  (
-             [Country]                                                                                       NVarChar(4000)          '$.country'
-            ,[Last_Update]                                                                                   DateTime2(7)            '$.last_update'
-            ,[New_Cases]                                                                                     BigInt                  '$.new_cases'
-            ,[New_Deaths]                                                                                    BigInt                  '$.new_deaths'
-            ,[New_Recovered]                                                                                 BigInt                  '$.new_recovered'
-            ,[New_Cases_Percentage]                                                                          Numeric(8, 4)           '$.new_cases_percentage'
-            ,[New_Deaths_Percentage]                                                                         Numeric(8, 4)           '$.new_deaths_percentage'
-            ,[New_Recovered_Percentage]                                                                      Numeric(8, 4)           '$.new_recovered_percentage'
+             [Country]                           NVarChar(4000)          '$.country'
+            ,[Last_Update]                       DateTime2(7)            '$.last_update'
+            ,[New_Cases]                         BigInt                  '$.new_cases'
+            ,[New_Deaths]                        BigInt                  '$.new_deaths'
+            ,[New_Recovered]                     BigInt                  '$.new_recovered'
+            ,[New_Cases_Percentage]              Numeric(8, 4)           '$.new_cases_percentage'
+            ,[New_Deaths_Percentage]             Numeric(8, 4)           '$.new_deaths_percentage'
+            ,[New_Recovered_Percentage]          Numeric(8, 4)           '$.new_recovered_percentage'
           ) As JsonQuery;
 
 ```
@@ -423,14 +423,14 @@ Would give you:
 Select   *
   From   OpenJson(@Json)
     With  (
-             [Country]                                                                                       NVarChar(4000)          '$.country'
-            ,[Last_Update]                                                                                   DateTime2(7)            '$.last_update'
-            ,[New_Cases]                                                                                     Integer                 '$.new_cases'
-            ,[New_Deaths]                                                                                    Integer                 '$.new_deaths'
-            ,[New_Recovered]                                                                                 Integer                 '$.new_recovered'
-            ,[New_Cases_Percentage]                                                                          Numeric(8, 4)           '$.new_cases_percentage'
-            ,[New_Deaths_Percentage]                                                                         Numeric(8, 4)           '$.new_deaths_percentage'
-            ,[New_Recovered_Percentage]                                                                      Numeric(8, 4)           '$.new_recovered_percentage'
+             [Country]                            NVarChar(4000)          '$.country'
+            ,[Last_Update]                        DateTime2(7)            '$.last_update'
+            ,[New_Cases]                          Integer                 '$.new_cases'
+            ,[New_Deaths]                         Integer                 '$.new_deaths'
+            ,[New_Recovered]                      Integer                 '$.new_recovered'
+            ,[New_Cases_Percentage]               Numeric(8, 4)           '$.new_cases_percentage'
+            ,[New_Deaths_Percentage]              Numeric(8, 4)           '$.new_deaths_percentage'
+            ,[New_Recovered_Percentage]           Numeric(8, 4)           '$.new_recovered_percentage'
           ) As JsonQuery;
 
 ```
@@ -454,12 +454,12 @@ Individual elements can be overriden by virtue of an override file, e.g.
 Select   *
   From   OpenJson(@Json)
     With  (
-             [Country]                                                                                       NChar(2)                '$.country'
-            ,[Last_Update]                                                                                   Date                    '$.last_update'
-            ,[New_Cases]                                                                                     Integer                 '$.new_cases'
-            ,[New_Deaths]                                                                                    Integer                 '$.new_deaths'
-            ,[New_Cases_Percentage]                                                                          Numeric(8, 4)           '$.new_cases_percentage'
-            ,[New_Deaths_Percentage]                                                                         Numeric(8, 4)           '$.new_deaths_percentage'
+             [Country]                            NChar(2)                '$.country'
+            ,[Last_Update]                        Date                    '$.last_update'
+            ,[New_Cases]                          Integer                 '$.new_cases'
+            ,[New_Deaths]                         Integer                 '$.new_deaths'
+            ,[New_Cases_Percentage]               Numeric(8, 4)           '$.new_cases_percentage'
+            ,[New_Deaths_Percentage]              Numeric(8, 4)           '$.new_deaths_percentage'
           ) As JsonQuery;
 ```
 
