@@ -23,7 +23,7 @@ deploy:
       secure: Gzl0nT3qtwEzm1LrgWLZxhEm9VoSOr9mSOiwowlCsFAc2v2Eprle3ZBQa32nbXGB # your encrypted token from GitHub
     on:
       branch: master                 # release from master branch only
-      APPVEYOR_REPO_TAG: true
+
     
 artifacts:
   path: '**\.nupkgs\*.nupkg'
