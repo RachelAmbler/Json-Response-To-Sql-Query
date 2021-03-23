@@ -1,4 +1,4 @@
-version: 2.2.{build}
+version: 1.0.{build}
 skip_tags: true
 image: Visual Studio 2019
 
@@ -16,12 +16,13 @@ deploy:
     skip_symbols: false
     draft: false
     prerelease: false
-    release: rambler-JsonResponseToSqlQuery_$(APPVEYOR_BUILD_VERSION)
+    release: Json-Response-To-Sql-Query_$(APPVEYOR_BUILD_VERSION)
     description: 'Release $(APPVEYOR_BUILD_VERSION)'
     auth_token:
       secure: Gzl0nT3qtwEzm1LrgWLZxhEm9VoSOr9mSOiwowlCsFAc2v2Eprle3ZBQa32nbXGB # your encrypted token from GitHub
     on:
       branch: master                 # release from master branch only
+      APPVEYOR_REPO_TAG: true
     
 artifacts:
   path: '**\.nupkgs\*.nupkg'
