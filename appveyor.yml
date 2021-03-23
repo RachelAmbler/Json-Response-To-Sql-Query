@@ -1,0 +1,27 @@
+version: 2.2.{build}
+skip_tags: true
+image: Visual Studio 2019
+configuration: Release
+before_build:
+- cmd: dotnet restore
+build:
+  verbosity: normal
+after_build:
+- cmd: >-
+    dotnet pack -c JsonResponseToSqlQuery/JsonResponseToSqlQuery.csproj /p:PackageOutputPath=.nupkgs
+
+deploy:
+  - provider: GitHub
+    artifact: /.*\.nupkg/            # upload all NuGet packages to release assets
+    skip_symbols: false
+    draft: false
+    prerelease: false
+    release: rambler-JsonResponseToSqlQuery_$(APPVEYOR_BUILD_VERSION)
+    description: 'Release $(APPVEYOR_BUILD_VERSION)'
+    auth_token:
+      secure: Gzl0nT3qtwEzm1LrgWLZxhEm9VoSOr9mSOiwowlCsFAc2v2Eprle3ZBQa32nbXGB # your encrypted token from GitHub
+    on:
+      branch: master                 # release from master branch only
+    
+artifacts:
+  path: '**\.nupkgs\*.nupkg'
