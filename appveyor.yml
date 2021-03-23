@@ -1,7 +1,7 @@
 version: 1.0.{build}
 skip_tags: true
 image: Visual Studio 2019
-platform: AnyCPU
+platform: Any CPU
 configuration: Release
 before_build:
 - cmd: dotnet restore
@@ -9,7 +9,7 @@ build:
   verbosity: normal
 after_build:
 - cmd: >-
-    dotnet pack -c JsonResponseToSqlQuery/JsonResponseToSqlQuery.csproj /p:PackageOutputPath=.nupkgs
+    dotnet pack -c JsonResponseToSqlQuery/JsonResponseToSqlQuery.csproj /p:PackageOutputPath=.nupkgs /p:Configuration=Release /p:Platform="Any CPU"
 
 deploy:
   - provider: GitHub
