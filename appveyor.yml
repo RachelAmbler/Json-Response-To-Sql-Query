@@ -1,7 +1,8 @@
 version: 1.0.{build}
 skip_tags: true
 image: Visual Studio 2019
-
+platform: Any CPU
+configuration: Release
 before_build:
 - cmd: dotnet restore
 build:
