@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
@@ -15,6 +16,7 @@ namespace JsonResponseToSqlQuery
         private bool _rowOne = true;
         private readonly string _indent = "            ";
         private string _sql;
+        private bool _atRoot = true;
         
         internal string Json { get; init; }
         
@@ -46,10 +48,12 @@ namespace JsonResponseToSqlQuery
             _dataTypes = new SortedList<string, string>();
             _elementOrder = new SortedList<int, string>();
             _dataTypeIsArray = new SortedList<string, bool>();
-           
+            
+            var path = (ArrayName==""? "" : $"', $.{ArrayName}'");
+
             _sql = $@"
 Select   *
-  From   OpenJson({JsonVariableName}, '$.{ArrayName}')
+  From   OpenJson({JsonVariableName}{path})
     With  (
 ";
             var node = JToken.Parse(Json);
@@ -85,6 +89,14 @@ Select   *
 
         private void RecursiveParseResponse(JToken token, bool save = false, string parent = "")
         {
+          if (_atRoot && ArrayName == "" && token is JArray array)
+          {
+            _atRoot = false;
+            foreach (var t in array)
+                RecursiveParseResponse(t, true, ArrayName);
+            return;
+          }
+          
           switch (token)
           {
             case JProperty property:
