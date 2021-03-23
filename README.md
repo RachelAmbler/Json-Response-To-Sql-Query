@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/viu39v24l8sui057?svg=true)](https://ci.appveyor.com/project/RachelAmbler/json-response-to-sql-query)
+[![GitHub](https://img.shields.io/github/license/rachelambler/Json-Response-To-Sql-Query.svg)](LICENSE)
+
 # Json-Response-To-Sql-Query
 A simple little helper app that allows you to take a Json response and create a Sql Server Select statement from it
 
