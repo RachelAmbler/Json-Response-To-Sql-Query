@@ -11,6 +11,7 @@ namespace JsonResponseToSqlQuery
         private SortedList<string, string> _dataTypes;
         private SortedList<int, string> _elementOrder;
         private SortedList<string, bool> _dataTypeIsArray;
+        private SortedList<string, string> _parents;
 
         private int _elementNo = 0;
         private bool _rowOne = true;
@@ -48,6 +49,7 @@ namespace JsonResponseToSqlQuery
             _dataTypes = new SortedList<string, string>();
             _elementOrder = new SortedList<int, string>();
             _dataTypeIsArray = new SortedList<string, bool>();
+            _parents = new SortedList<string, string>();
             
             var path = (ArrayName==""? "" : $"', $.{ArrayName}'");
 
@@ -68,15 +70,21 @@ Select   *
                 var isArray = _dataTypeIsArray[elementName];
 
                 if (dataType == "") continue;
-                
-                elementName = "." + elementName;
 
-                if (Overrides.ContainsKey(elementName))
-                {
-                  dataType = Overrides[elementName];
-                  if(dataType == "*")
-                    continue;
-                }
+                var parent = _parents.ContainsKey(elementName) ? _parents[elementName] + ".*" : "";
+                elementName = "." + elementName;
+                
+                var result = CheckOverride(parent);
+                if(result.Item1)
+                  continue;
+                if (!string.IsNullOrEmpty(result.Item2))
+                  dataType = result.Item2;
+                
+                result = CheckOverride(elementName);
+                if(result.Item1)
+                  continue;
+                if (!string.IsNullOrEmpty(result.Item2))
+                  dataType = result.Item2;
 
                 var columnName = "[" + (isArray ? (elementName + InnerArrayColumnNameSuffix).FixCaseOfName('.') : elementName.FixCaseOfName('.')) + "]";
                 _sql += _indent + (_rowOne ? " " : ",") + columnName.PadRight(96) + dataType.PadRight(24) + "'$" + elementName + "'" + (isArray ? " As Json" : "") + Environment.NewLine;
@@ -85,6 +93,19 @@ Select   *
             _sql += $@"          ) As {QueryAliasName};";
             
             return _sql;
+
+            Tuple<bool, string> CheckOverride(string localizedElementName)
+            {
+              if (string.IsNullOrEmpty(localizedElementName))
+                return new Tuple<bool, string>(false, string.Empty);
+              
+              if (!localizedElementName.StartsWith(".")) localizedElementName = "." + localizedElementName;
+
+              if (!Overrides.ContainsKey(localizedElementName)) return new Tuple<bool, string>(false, string.Empty);
+              var dataType = Overrides[localizedElementName];
+              return dataType == "*" ? new Tuple<bool, string>(true, string.Empty) : new Tuple<bool, string>(false, dataType);
+
+            }
         }
 
         private void RecursiveParseResponse(JToken token, bool save = false, string parent = "")
@@ -103,6 +124,8 @@ Select   *
             {
               var jProp = property;
               var name = parent == "" ? jProp.Name : $"{parent}.{jProp.Name}";
+              if(!string.IsNullOrEmpty(parent) && !_parents.ContainsKey(name))
+                _parents.Add(name, parent);
 
               if (save)
               {
