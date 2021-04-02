@@ -18,7 +18,6 @@ namespace JsonResponseToSqlQuery
         /// <param name="defaultDateDataType">AThe Sql Datatype to default all DateTime values to [System default = DateTime2(7)]</param>
         /// <param name="defaultIntegerDataType">The Sql Datatype to default all Integer values to [System default = BigInt]</param>
         /// <param name="defaultUuidDataType">The Sql Datatype to default all Uuid values to [System default = UniqueIdentifier]</param>
-        /// <param name="defaultInnerArrayDataType">The Sql Datatype to default all Inner Array values to [System default = NVarChar(4000)]</param>
         /// <param name="innerArrayColumnNameSuffix">The suffix to append to a column that contains a subarray [ System default = _JSON_ARRAY]</param>
         /// <param name="queryAliasName">The name to give to the alias for the json query [ System default = JsonQuery]</param>
         /// <param name="overrideMappingFile">Path to file containing any specific datatype override mappings</param>
@@ -34,8 +33,7 @@ namespace JsonResponseToSqlQuery
                 string defaultFloatDataType = "Numeric(8, 4)",
                 string defaultDateDataType = "DateTime2(7)",
                 string defaultIntegerDataType = "BigInt",
-                string defaultUuidDataType = "UniqueIdentifier", 
-                string defaultInnerArrayDataType = "NVarChar(4000)",
+                string defaultUuidDataType = "UniqueIdentifier",
                 string innerArrayColumnNameSuffix = "_JSON_ARRAY",
                 string queryAliasName = "JsonQuery",
                 FileInfo sqlOutputFile = null,
@@ -111,7 +109,6 @@ namespace JsonResponseToSqlQuery
                             defaultDateDataType,
                             defaultIntegerDataType,
                             defaultUuidDataType,
-                            defaultInnerArrayDataType,
                             innerArrayColumnNameSuffix,
                             queryAliasName,
                             sqlOutputFile == null ? string.Empty:sqlOutputFile.FullName,
@@ -125,13 +122,12 @@ namespace JsonResponseToSqlQuery
                     
                     jsonResponseFile ??= solutionFile.JsonRoot.DefaultResponseFileName.ConvertFilePathToFileInfo(projectSolutionFile);
                     arrayName = solutionFile.JsonRoot.ArrayName;
-                    jsonVariableName = solutionFile.JsonRoot.ArrayName;
+                    jsonVariableName = solutionFile.JsonRoot.JsonVariableName;
                     innerArrayColumnNameSuffix = solutionFile.JsonRoot.InnerArrayColumnNameSuffix;
                     queryAliasName = solutionFile.JsonRoot.QueryAliasName;
                     sqlOutputFile = solutionFile.JsonRoot.SqlOutputFileName.ConvertFilePathToFileInfo(projectSolutionFile);
                     overrideMappingFile = solutionFile.JsonRoot.MappingFileName.ConvertFilePathToFileInfo(projectSolutionFile);
-
-                    defaultInnerArrayDataType = solutionFile.JsonRoot.DefaultDataTypes.ArrayDateType;
+                    
                     defaultDateDataType = solutionFile.JsonRoot.DefaultDataTypes.DateDateType;
                     defaultFloatDataType = solutionFile.JsonRoot.DefaultDataTypes.FloatDateType;
                     defaultIntegerDataType = solutionFile.JsonRoot.DefaultDataTypes.IntegerDateType;
@@ -182,7 +178,6 @@ namespace JsonResponseToSqlQuery
                     DefaultDateDataType = defaultDateDataType,
                     DefaultIntegerDataType = defaultIntegerDataType,
                     DefaultUuidDataType = defaultUuidDataType,
-                    DefaultInnerArrayDataType = defaultInnerArrayDataType,
                     InnerArrayColumnNameSuffix = innerArrayColumnNameSuffix,
                     QueryAliasName = queryAliasName,
                     Overrides = overrides

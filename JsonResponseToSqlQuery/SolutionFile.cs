@@ -17,7 +17,6 @@ namespace JsonResponseToSqlQuery
                 string defaultDateDataType,
                 string defaultIntegerDataType,
                 string defaultUuidDataType,
-                string defaultInnerArrayDataType,
                 string innerArrayColumnNameSuffix,
                 string queryAliasName,
                 string sqlOutputFile,
@@ -35,7 +34,6 @@ namespace JsonResponseToSqlQuery
                     InnerArrayColumnNameSuffix = innerArrayColumnNameSuffix,
                     DefaultDataTypes = new DefaultDataTypes
                     {
-                            ArrayDateType = defaultInnerArrayDataType,
                             StringDataType = defaultStringDataType,
                             FloatDateType = defaultFloatDataType,
                             DateDateType = defaultDateDataType,
@@ -81,7 +79,6 @@ namespace JsonResponseToSqlQuery
             [JsonProperty("floatDataType")] internal string FloatDateType  { get; set; }
             [JsonProperty("integerDataType")] internal string IntegerDateType  { get; set; }
             [JsonProperty("uuidDataType")] internal string UuidDateType  { get; set; }
-            [JsonProperty("arrayDataType")] internal string ArrayDateType  { get; set; }
         }
         
     }

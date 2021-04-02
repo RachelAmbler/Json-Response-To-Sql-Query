@@ -8,6 +8,8 @@ namespace JsonResponseToSqlQuery
 {
     internal class Parser
     {
+       private const string INNER_ARRAY_TYPE = "NVarChar(MAX)";
+       private const string INNER_ARRAY_TYPE_MARKER = "*" + INNER_ARRAY_TYPE;
         private SortedList<string, string> _dataTypes;
         private SortedList<int, string> _elementOrder;
         private SortedList<string, bool> _dataTypeIsArray;
@@ -35,8 +37,6 @@ namespace JsonResponseToSqlQuery
         
         internal string DefaultUuidDataType { get; init; }
         
-        internal string DefaultInnerArrayDataType { get; init; }
-
         internal string InnerArrayColumnNameSuffix { get; init; }
 
         internal string QueryAliasName { get; init; }
@@ -51,9 +51,8 @@ namespace JsonResponseToSqlQuery
             _dataTypeIsArray = new SortedList<string, bool>();
             _parents = new SortedList<string, string>();
             
-            var path = (ArrayName==""? "" : $"', $.{ArrayName}'");
+            var path = (ArrayName==""? "" : $", '$.{ArrayName}'");
 
-           
             var generatedOverrideMappingFileContents = @"
 # Auto-generated override mapping file
 # Update this file according to your requirements and rerun the parser to modify the resulting Sql query
@@ -163,16 +162,16 @@ Select   *
                     JTokenType.Float => DefaultFloatDataType,
                     JTokenType.Guid => DefaultUuidDataType,
                     JTokenType.Object => DefaultStringDataType,
-                    JTokenType.Array => "*" + DefaultInnerArrayDataType,
+                    JTokenType.Array => INNER_ARRAY_TYPE_MARKER,
                     _ => null
                 };
 
                 if (jProp.Value.Type == JTokenType.Array)
-                  dataType = "*" + DefaultInnerArrayDataType;
+                  dataType = INNER_ARRAY_TYPE_MARKER;
 
-                if (dataType == "*" + DefaultInnerArrayDataType)
+                if (dataType == INNER_ARRAY_TYPE_MARKER)
                 {
-                  dataType = dataType.Substring(1);
+                  dataType = INNER_ARRAY_TYPE;
                   _dataTypeIsArray[name] = true;
                   
                 }
