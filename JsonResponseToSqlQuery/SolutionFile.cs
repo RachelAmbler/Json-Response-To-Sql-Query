@@ -20,7 +20,8 @@ namespace JsonResponseToSqlQuery
                 string innerArrayColumnNameSuffix,
                 string queryAliasName,
                 string sqlOutputFile,
-                string overrideMappingFile
+                string overrideMappingFile,
+                string hierarchySeparator
                 )
         {
             JsonRoot = new Root
@@ -32,6 +33,7 @@ namespace JsonResponseToSqlQuery
                     SqlOutputFileName = sqlOutputFile,
                     MappingFileName = overrideMappingFile,
                     InnerArrayColumnNameSuffix = innerArrayColumnNameSuffix,
+                    HierarchySeparator = hierarchySeparator,
                     DefaultDataTypes = new DefaultDataTypes
                     {
                             StringDataType = defaultStringDataType,
@@ -68,7 +70,7 @@ namespace JsonResponseToSqlQuery
             [JsonProperty("innerArrayColumnNameSuffix")] internal string InnerArrayColumnNameSuffix { get; set; }
             [JsonProperty("queryAliasName")] internal string QueryAliasName { get; set; }
             [JsonProperty("sqlOutputFileName")] internal string SqlOutputFileName { get; set; }
-            
+            [JsonProperty("hierarchySeparator")] internal string HierarchySeparator { get; set; }
             [JsonProperty("defaultDataTypes")] internal DefaultDataTypes DefaultDataTypes { get; set; }
         }
 

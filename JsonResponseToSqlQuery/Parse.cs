@@ -42,6 +42,8 @@ namespace JsonResponseToSqlQuery
         internal string QueryAliasName { get; init; }
         
         internal SortedList<string, string> Overrides{ get; init; }
+        
+        internal string HierarchySeparator { get; init; }
 
         
         internal Tuple<string, string> ParseJsonResponse()
@@ -96,7 +98,7 @@ Select   *
                   dataType = result.Item2;
 
                 var columnName = "[" + (isArray ? (elementName + InnerArrayColumnNameSuffix).FixCaseOfName('.') : elementName.FixCaseOfName('.')) + "]";
-                _sql += _indent + (_rowOne ? " " : ",") + columnName.PadRight(96) + dataType.PadRight(24) + "'$" + elementName + "'" + (isArray ? " As Json" : "") + Environment.NewLine;
+                _sql += _indent + (_rowOne ? " " : ",") + columnName.Replace(".", HierarchySeparator).PadRight(96) + dataType.PadRight(24) + "'$" + elementName + "'" + (isArray ? " As Json" : "") + Environment.NewLine;
                 generatedOverrideMappingFileContents += $"{elementName.PadRight(64)} |>  {dataType}\n";
                 _rowOne = false;
             }
