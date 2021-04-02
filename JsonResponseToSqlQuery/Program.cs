@@ -26,6 +26,7 @@ namespace JsonResponseToSqlQuery
         /// <param name="projectSolutionFile">Path to a project solution file.</param>
         /// <param name="projectSolutionFolder">Path to a project solution folder - there must be a single file ending with the extension .rsol in the folder .</param>
         /// <param name="createProjectSolutionFile">If a Project Solution file is specified, then passing this flag will force the app to create\overwrite the file based upon any values passed in the current command line [ System default = false].</param>
+        /// <param name="autoCreateMappingFile">Auto create a Mapping file if one does not exist using the defaults gleamed from the Json response file.</param>
         private static void Main(FileInfo jsonResponseFile = null,
                 string arrayName = "",
                 string jsonVariableName = "@Json",
@@ -41,7 +42,8 @@ namespace JsonResponseToSqlQuery
                 FileInfo overrideMappingFile = null,
                 FileInfo projectSolutionFile = null,
                 DirectoryInfo projectSolutionFolder = null,
-                bool createProjectSolutionFile = false)
+                bool createProjectSolutionFile = false,
+                bool autoCreateMappingFile = false)
         {
             var overrides = new SortedList<string, string>();
 
@@ -100,15 +102,7 @@ namespace JsonResponseToSqlQuery
 
                 if (createProjectSolutionFile)
                 {
-                    if (overrideMappingFile == null)
-                    {
-                        var name = projectSolutionFile.Name.Substring(0, projectSolutionFile.Name.Length - projectSolutionFile.Extension.Length - 2) + ".map";
-                        overrideMappingFile = new FileInfo(name);
-                        overrideMappingFile.WriteAllText(@"
-# Empty Mapping file
-");
-
-                    }
+                    
                     var solutionFile = new SolutionFile(jsonResponseFile == null? string.Empty: jsonResponseFile.FullName,
                             arrayName,
                             jsonVariableName,
@@ -160,7 +154,7 @@ namespace JsonResponseToSqlQuery
             }
 
             var json = jsonResponseFile.ReadAllText();
-            if (overrideMappingFile != null)
+            if (overrideMappingFile != null && !autoCreateMappingFile)
             {
                 if (!overrideMappingFile.Exists)
                 {
@@ -194,7 +188,13 @@ namespace JsonResponseToSqlQuery
                     Overrides = overrides
             };
 
-            var sql = parser.ParseJsonReponse();
+            var (sql, generatedOverrideMappingFileContents) = parser.ParseJsonResponse();
+
+            if (overrideMappingFile != null && autoCreateMappingFile)
+            {
+                overrideMappingFile.WriteAllText(generatedOverrideMappingFileContents);
+                Console.WriteLine($"\n\nOverride mapping file {overrideMappingFile.FullName} created\n");
+            }
 
             switch (sqlOutputFile)
             {
@@ -202,8 +202,8 @@ namespace JsonResponseToSqlQuery
                     Console.WriteLine(sql);
                     break;
                 default:
-                    Console.WriteLine($"\nSuccess!\n\nSql written to {sqlOutputFile.FullName}\n");
                     sqlOutputFile.WriteAllText(sql);
+                    Console.WriteLine($"\n\nSql written to {sqlOutputFile.FullName}\n");
                     break;
             }
         }

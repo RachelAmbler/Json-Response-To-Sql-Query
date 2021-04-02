@@ -44,7 +44,7 @@ namespace JsonResponseToSqlQuery
         internal SortedList<string, string> Overrides{ get; init; }
 
         
-        internal string ParseJsonReponse()
+        internal Tuple<string, string> ParseJsonResponse()
         {
             _dataTypes = new SortedList<string, string>();
             _elementOrder = new SortedList<int, string>();
@@ -52,6 +52,16 @@ namespace JsonResponseToSqlQuery
             _parents = new SortedList<string, string>();
             
             var path = (ArrayName==""? "" : $"', $.{ArrayName}'");
+
+           
+            var generatedOverrideMappingFileContents = @"
+# Auto-generated override mapping file
+# Update this file according to your requirements and rerun the parser to modify the resulting Sql query
+
+# All these columns are set to their current defaults
+
+";
+
 
             _sql = $@"
 Select   *
@@ -88,11 +98,12 @@ Select   *
 
                 var columnName = "[" + (isArray ? (elementName + InnerArrayColumnNameSuffix).FixCaseOfName('.') : elementName.FixCaseOfName('.')) + "]";
                 _sql += _indent + (_rowOne ? " " : ",") + columnName.PadRight(96) + dataType.PadRight(24) + "'$" + elementName + "'" + (isArray ? " As Json" : "") + Environment.NewLine;
+                generatedOverrideMappingFileContents += $"{elementName.PadRight(64)} |>  {dataType}\n";
                 _rowOne = false;
             }
             _sql += $@"          ) As {QueryAliasName};";
             
-            return _sql;
+            return new Tuple<string, string>(_sql, generatedOverrideMappingFileContents);
 
             Tuple<bool, string> CheckOverride(string localizedElementName)
             {
