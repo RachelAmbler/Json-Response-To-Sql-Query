@@ -26,6 +26,7 @@ namespace JsonResponseToSqlQuery
         /// <param name="projectSolutionFolder">Path to a project solution folder - there must be a single file ending with the extension .rsol in the folder .</param>
         /// <param name="createProjectSolutionFile">If a Project Solution file is specified, then passing this flag will force the app to create\overwrite the file based upon any values passed in the current command line [ System default = false].</param>
         /// <param name="autoCreateMappingFile">Auto create a Mapping file if one does not exist using the defaults gleamed from the Json response file.</param>
+        /// <param name="hierarchySeparator">If passed this value will be used in the Sql column as opposed to the periods used by Json to define the hierarchy.</param>
         private static void Main(FileInfo jsonResponseFile = null,
                 string arrayName = "",
                 string jsonVariableName = "@Json",
@@ -41,7 +42,8 @@ namespace JsonResponseToSqlQuery
                 FileInfo projectSolutionFile = null,
                 DirectoryInfo projectSolutionFolder = null,
                 bool createProjectSolutionFile = false,
-                bool autoCreateMappingFile = false)
+                bool autoCreateMappingFile = false,
+                string hierarchySeparator = ".")
         {
             var overrides = new SortedList<string, string>();
 
@@ -112,7 +114,8 @@ namespace JsonResponseToSqlQuery
                             innerArrayColumnNameSuffix,
                             queryAliasName,
                             sqlOutputFile == null ? string.Empty:sqlOutputFile.FullName,
-                            overrideMappingFile == null ? string.Empty: overrideMappingFile.FullName);
+                            overrideMappingFile == null ? string.Empty: overrideMappingFile.FullName,
+                            hierarchySeparator);
                     
                     solutionFile.Save(projectSolutionFile);
                 }
@@ -127,6 +130,7 @@ namespace JsonResponseToSqlQuery
                     queryAliasName = solutionFile.JsonRoot.QueryAliasName;
                     sqlOutputFile = solutionFile.JsonRoot.SqlOutputFileName.ConvertFilePathToFileInfo(projectSolutionFile);
                     overrideMappingFile = solutionFile.JsonRoot.MappingFileName.ConvertFilePathToFileInfo(projectSolutionFile);
+                    hierarchySeparator = solutionFile.JsonRoot.HierarchySeparator;
                     
                     defaultDateDataType = solutionFile.JsonRoot.DefaultDataTypes.DateDateType;
                     defaultFloatDataType = solutionFile.JsonRoot.DefaultDataTypes.FloatDateType;
@@ -180,7 +184,8 @@ namespace JsonResponseToSqlQuery
                     DefaultUuidDataType = defaultUuidDataType,
                     InnerArrayColumnNameSuffix = innerArrayColumnNameSuffix,
                     QueryAliasName = queryAliasName,
-                    Overrides = overrides
+                    Overrides = overrides,
+                    HierarchySeparator = hierarchySeparator
             };
 
             var (sql, generatedOverrideMappingFileContents) = parser.ParseJsonResponse();
