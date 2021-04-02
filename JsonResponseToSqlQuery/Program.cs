@@ -162,14 +162,8 @@ namespace JsonResponseToSqlQuery
                     return;
                 }
 
-                var overrideContents = overrideMappingFile.ReadAllText();
-                
-                foreach (var def in overrideContents.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(l => l.Split("|>")))
-                {
-                    if(def.Length < 1 || def[0].StartsWith("#"))
-                        continue;
-                    overrides.Add(def[0].Trim(), def[1].Trim());
-                }
+                if (ParseOverrideFile(overrideMappingFile, 0) == false)
+                    return;
             }
 
             var parser = new Parser
@@ -205,6 +199,51 @@ namespace JsonResponseToSqlQuery
                     sqlOutputFile.WriteAllText(sql);
                     Console.WriteLine($"\n\nSql written to {sqlOutputFile.FullName}\n");
                     break;
+            }
+
+            bool ParseOverrideFile(FileInfo thisOverrideMappingFile, int n)
+            {
+                if (!thisOverrideMappingFile.Exists)
+                {
+                    Error($"Unable to locate primary override mapping file '{thisOverrideMappingFile.FullName}");
+                    return false;
+                }
+                var contents = thisOverrideMappingFile.ReadAllText();
+                
+                var fail = new Tuple<bool, string>(false, string.Empty);
+                if (n == 10)
+                {
+                    Error("Too many nested override mapping files provided. Please ensure there are no more than 10 nested files and try again'");
+                    return false;
+                }
+                foreach (var includeRef in contents.Split(Environment.NewLine).Where(l => l.StartsWith("# *include:")).Select(i => i.Remove(0, 11).Trim()))
+                {
+                    var includeRefFullPath = Path.GetFullPath(overrideMappingFile.DirectoryName + "/" + includeRef);
+                    var includedFile = new FileInfo(includeRefFullPath);
+                    if (!includedFile.Exists)
+                    {
+                        Error($"Unable to locate included file '{includeRefFullPath}' defined in {thisOverrideMappingFile.FullName}");
+                        return false;
+                    }
+                    var ret = ParseOverrideFile(includedFile, n + 1);
+                    if (ret == false)
+                        return false;
+                }
+                
+                foreach (var def in contents.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(l => l.Split("|>")))
+                {
+                    if(def.Length < 1 || def[0].StartsWith("#"))
+                        continue;
+                    var propertyName = def[0].Trim();
+                    var overrideValue = def[1].Trim();
+                    
+                    if(overrides.ContainsKey(propertyName))
+                        overrides[propertyName] = overrideValue;
+                    else
+                        overrides.Add(propertyName, overrideValue);
+                }
+
+                return true;
             }
         }
     }
