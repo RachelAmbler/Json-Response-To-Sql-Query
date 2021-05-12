@@ -28,6 +28,7 @@ namespace JsonResponseToSqlQuery
         /// <param name="autoCreateMappingFile">Auto create a Mapping file if one does not exist using the defaults gleamed from the Json response file.</param>
         /// <param name="hierarchySeparator">If passed this value will be used in the Sql column as opposed to the periods used by Json to define the hierarchy.</param>
         /// <param name="silent">If set then the app will not return any output other than exceptions [System default = false].</param>
+        /// <param name="listChangedFiles">If set then the app will simply list out the modified files (silent will be set) [System default = false].</param>
         private static void Main(FileInfo jsonResponseFile = null,
                 string arrayName = "",
                 string jsonVariableName = "@Json",
@@ -45,10 +46,13 @@ namespace JsonResponseToSqlQuery
                 bool createProjectSolutionFile = false,
                 bool autoCreateMappingFile = false,
                 string hierarchySeparator = ".",
-                bool silent = false
+                bool silent = false,
+                bool listChangedFiles = false
                 )
         {
             var overrides = new SortedList<string, string>();
+            if (listChangedFiles)
+                silent = true;
 
             if (projectSolutionFolder != null && !projectSolutionFolder.Exists)
             {
@@ -202,6 +206,8 @@ namespace JsonResponseToSqlQuery
                 overrideMappingFile.WriteAllText(generatedOverrideMappingFileContents);
                 if(!silent)
                     Console.WriteLine($"\n\nOverride mapping file {overrideMappingFile.FullName} created\n");
+                if(listChangedFiles)
+                    Console.WriteLine(overrideMappingFile.FullName);
             }
 
             switch (sqlOutputFile)
@@ -213,6 +219,8 @@ namespace JsonResponseToSqlQuery
                     sqlOutputFile.WriteAllText(sql);
                     if (!silent)
                         Console.WriteLine($"\n\nSql written to {sqlOutputFile.FullName}\n");
+                    if(listChangedFiles)
+                        Console.WriteLine(sqlOutputFile.FullName);
                     break;
             }
 
