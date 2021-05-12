@@ -53,6 +53,12 @@ namespace JsonResponseToSqlQuery
                 return;
             }
 
+            if (overrideMappingFile != null && autoCreateMappingFile && overrideMappingFile.Exists)
+            {
+                Error($"Existing override mapping file '{overrideMappingFile}' already exists and auto-create-mapping-file was set");
+                return;
+            }
+
             if (projectSolutionFolder != null)
             {
                 var solutionFiles = projectSolutionFolder.GetFiles("*.rsol");
@@ -137,6 +143,10 @@ namespace JsonResponseToSqlQuery
                     defaultIntegerDataType = solutionFile.JsonRoot.DefaultDataTypes.IntegerDateType;
                     defaultStringDataType = solutionFile.JsonRoot.DefaultDataTypes.StringDataType;
                     defaultUuidDataType = solutionFile.JsonRoot.DefaultDataTypes.UuidDateType;
+                    
+                    if (overrideMappingFile != null && autoCreateMappingFile && overrideMappingFile.Exists)
+                        autoCreateMappingFile = false;
+
                 }
                 
             }
