@@ -27,6 +27,7 @@ namespace JsonResponseToSqlQuery
         /// <param name="createProjectSolutionFile">If a Project Solution file is specified, then passing this flag will force the app to create\overwrite the file based upon any values passed in the current command line [ System default = false].</param>
         /// <param name="autoCreateMappingFile">Auto create a Mapping file if one does not exist using the defaults gleamed from the Json response file.</param>
         /// <param name="hierarchySeparator">If passed this value will be used in the Sql column as opposed to the periods used by Json to define the hierarchy.</param>
+        /// <param name="silent">If set then the app will not return any output other than exceptions [System default = false].</param>
         private static void Main(FileInfo jsonResponseFile = null,
                 string arrayName = "",
                 string jsonVariableName = "@Json",
@@ -43,7 +44,9 @@ namespace JsonResponseToSqlQuery
                 DirectoryInfo projectSolutionFolder = null,
                 bool createProjectSolutionFile = false,
                 bool autoCreateMappingFile = false,
-                string hierarchySeparator = ".")
+                string hierarchySeparator = ".",
+                bool silent = false
+                )
         {
             var overrides = new SortedList<string, string>();
 
@@ -197,7 +200,8 @@ namespace JsonResponseToSqlQuery
             if (overrideMappingFile != null && autoCreateMappingFile)
             {
                 overrideMappingFile.WriteAllText(generatedOverrideMappingFileContents);
-                Console.WriteLine($"\n\nOverride mapping file {overrideMappingFile.FullName} created\n");
+                if(!silent)
+                    Console.WriteLine($"\n\nOverride mapping file {overrideMappingFile.FullName} created\n");
             }
 
             switch (sqlOutputFile)
@@ -207,7 +211,8 @@ namespace JsonResponseToSqlQuery
                     break;
                 default:
                     sqlOutputFile.WriteAllText(sql);
-                    Console.WriteLine($"\n\nSql written to {sqlOutputFile.FullName}\n");
+                    if (!silent)
+                        Console.WriteLine($"\n\nSql written to {sqlOutputFile.FullName}\n");
                     break;
             }
 
