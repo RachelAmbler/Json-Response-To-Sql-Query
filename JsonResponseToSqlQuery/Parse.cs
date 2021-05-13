@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static JsonResponseToSqlQuery.Lib;
 
 namespace JsonResponseToSqlQuery
 {
@@ -69,8 +71,17 @@ Select   *
   From   OpenJson({JsonVariableName}{path})
     With  (
 ";
-            var node = JToken.Parse(Json);
-        
+            JToken node;
+            try
+            {
+              node = JToken.Parse(Json);
+            }
+            catch (JsonReaderException jre)
+            {
+              Error($"Exception raised when trying to parse Response. {jre.Message}");
+              return new Tuple<string, string>(string.Empty, string.Empty);
+            }
+
             RecursiveParseResponse(node, false, "");
 
             foreach (var thisElementNo in _elementOrder.Keys.OrderBy(e => e))
