@@ -32,7 +32,7 @@ namespace JsonResponseToSqlQuery
         /// <param name="listChangedFiles">If set then the app will simply list out the modified files (silent will be set) [System default = false].</param>
         /// <param name="reformatJsonResponse">If set the app will attempt to reformat the Response Json before parsing [System default = false].</param>
         /// <param name="useYamlForMaps">If set the app will use yml formatting for the map files [System default = true].</param>
-        private static void Main(FileInfo jsonResponseFile = null,
+        private static int Main(FileInfo jsonResponseFile = null,
                 string arrayName = "",
                 string jsonVariableName = "@Json",
                 string defaultStringDataType = "NVarChar(4000)",
@@ -66,13 +66,13 @@ namespace JsonResponseToSqlQuery
             if (projectSolutionFolder != null && !projectSolutionFolder.Exists)
             {
                 Error($"Project Solution Folder '{projectSolutionFolder}' does not exist");
-                return;
+                return 1;
             }
 
             if (overrideMappingFile != null && autoCreateMappingFile && overrideMappingFile.Exists)
             {
                 Error($"Existing override mapping file '{overrideMappingFile}' already exists and auto-create-mapping-file was set");
-                return;
+                return 1;
             }
 
             if (projectSolutionFolder != null)
@@ -82,10 +82,10 @@ namespace JsonResponseToSqlQuery
                 {
                     case 0:
                         Error($"Unable to find any solution files in the specified folder '{projectSolutionFolder}'");
-                        return;
+                        return 1;
                     case > 1:
                         Error($"Multiple solution files found in '{projectSolutionFolder}'. Please remove extra files or use the --project-Solution-File parameter instead");
-                        return;
+                        return 1;
                     default:
                         projectSolutionFile = solutionFiles[0];
                         break;
@@ -95,7 +95,7 @@ namespace JsonResponseToSqlQuery
             if (projectSolutionFile != null && !projectSolutionFile.Name.EndsWith("rsol"))
             {
                 Error($"Project solution filename has the incorrect extension - it should end with .rsol");
-                return;
+                return 1;
             }
 
             if (jsonResponseFile == null && projectSolutionFile == null && !createProjectSolutionFile)
@@ -113,13 +113,13 @@ namespace JsonResponseToSqlQuery
                 if (!createProjectSolutionFile && !projectSolutionFile.Exists)
                 {
                     Error($"Unable to locate Project solution file '{projectSolutionFile.FullName}'");
-                    return;
+                    return 1;
                 }
 
                 if (projectSolutionFile?.Directory != null && !projectSolutionFile.Directory.Exists)
                 {
                     Error($"Unable to locate the folder for the Project Solution file '{projectSolutionFile.FullName}'");
-                    return;
+                    return 1;
                 }
 
                 if (createProjectSolutionFile)
@@ -170,13 +170,13 @@ namespace JsonResponseToSqlQuery
             if (jsonResponseFile != null && !jsonResponseFile.Exists)
             {
                 Error($"Unable to locate Json Response file '{jsonResponseFile.FullName}'");
-                return;
+                return 1;
             }
 
             if (sqlOutputFile?.Directory != null && !sqlOutputFile.Directory.Exists)
             {
                 Error($"Unable to locate the folder requested for the the Sql output '{sqlOutputFile.DirectoryName}'");
-                return;
+                return 1;
             }
 
             var json = jsonResponseFile.ReadAllText();
@@ -193,18 +193,18 @@ namespace JsonResponseToSqlQuery
                 if (!overrideMappingFile.Exists)
                 {
                     Error($"Unable to locate override mapping file '{overrideMappingFile.FullName}'");
-                    return;
+                    return 1;
                 }
 
                 if (useYamlForMaps)
                 {
                     if (ParseYamlOverrideFile(overrideMappingFile, 0) == false)
-                        return;
+                        return 2;
                 }
                 else
                 {
                     if (ParseOverrideFile(overrideMappingFile, 0) == false)
-                        return;
+                        return 2;
                 }
             }
 
@@ -226,7 +226,7 @@ namespace JsonResponseToSqlQuery
             
             var (sql, defaultMapFile) = parser.ParseJsonResponse();
             if (string.IsNullOrEmpty(sql) && defaultMapFile != null &&  defaultMapFile.MappedColumns.Count == 0)
-                return;
+                return 3;
 
             if (overrideMappingFile != null && autoCreateMappingFile && defaultMapFile != null)
             {
@@ -364,6 +364,8 @@ namespace JsonResponseToSqlQuery
 
                 return true;
             }
+
+            return 0;
         }
     }
 }
