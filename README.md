@@ -438,18 +438,19 @@ Select   *
 
 ```
 
-Individual elements can be overriden by virtue of an override file, e.g.
+Individual elements can be overriden by virtue of a yaml based override file, e.g.
 
-```
+```yml
 # My override file for Covid-19
-
+include_files: []
+mapped_columns:
 #Country should be just 2 characters
-.country                  |> NChar(2)
+.country: NChar(2)
 # Last Update can be just a date
-.last_update              |> Date
-# Don't care about recovered numbers
-.new_recovered            |> *
-.new_recovered_percentage |> *
+.last_update: Date
+ignored_columns:
+  - .new_recovered 
+  - .new_recovered_percentage
 ```
 `dotnet JsonResponseToSqlQuery.dll --json-response-file "/tmp/Covid.json" --array-name "" --default-integer-data-type Integer --override-mapping-file /tmp/CovidOverrides.map`
 
