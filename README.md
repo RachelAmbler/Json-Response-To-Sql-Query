@@ -445,9 +445,9 @@ Individual elements can be overriden by virtue of a yaml based override file, e.
 include_files: []
 mapped_columns:
 #Country should be just 2 characters
-.country: NChar(2)
+  .country: NChar(2)
 # Last Update can be just a date
-.last_update: Date
+  .last_update: Date
 ignored_columns:
   - .new_recovered 
   - .new_recovered_percentage
