@@ -31,6 +31,7 @@ namespace JsonResponseToSqlQuery
         /// <param name="silent">If set then the app will not return any output other than exceptions [System default = false].</param>
         /// <param name="listChangedFiles">If set then the app will simply list out the modified files (silent will be set) [System default = false].</param>
         /// <param name="reformatJsonResponse">If set the app will attempt to reformat the Response Json before parsing [System default = false].</param>
+        /// <param name="useYamlForMaps">If set the app will use yml formatting for the map files [System default = true].</param>
         private static void Main(FileInfo jsonResponseFile = null,
                 string arrayName = "",
                 string jsonVariableName = "@Json",
@@ -50,10 +51,13 @@ namespace JsonResponseToSqlQuery
                 string hierarchySeparator = ".",
                 bool silent = false,
                 bool listChangedFiles = false,
-                bool reformatJsonResponse = false
+                bool reformatJsonResponse = false,
+                bool useYamlForMaps = true
                 )
         {
             var overrides = new SortedList<string, string>();
+            var mapFile = new MapFile();
+            
             if (listChangedFiles)
                 silent = true;
 
@@ -192,8 +196,16 @@ namespace JsonResponseToSqlQuery
                     return;
                 }
 
-                if (ParseOverrideFile(overrideMappingFile, 0) == false)
-                    return;
+                if (useYamlForMaps)
+                {
+                    if (ParseYamlOverrideFile(overrideMappingFile, 0) == false)
+                        return;
+                }
+                else
+                {
+                    if (ParseOverrideFile(overrideMappingFile, 0) == false)
+                        return;
+                }
             }
 
             var parser = new Parser
@@ -208,16 +220,27 @@ namespace JsonResponseToSqlQuery
                     DefaultUuidDataType = defaultUuidDataType,
                     InnerArrayColumnNameSuffix = innerArrayColumnNameSuffix,
                     QueryAliasName = queryAliasName,
-                    Overrides = overrides,
+                    MapFile = mapFile,
                     HierarchySeparator = hierarchySeparator
             };
-
-            var (sql, generatedOverrideMappingFileContents) = parser.ParseJsonResponse();
-            if (string.IsNullOrEmpty(sql) && string.IsNullOrEmpty(generatedOverrideMappingFileContents))
+            
+            var (sql, defaultMapFile) = parser.ParseJsonResponse();
+            if (string.IsNullOrEmpty(sql) && defaultMapFile != null &&  defaultMapFile.MappedColumns.Count == 0)
                 return;
 
-            if (overrideMappingFile != null && autoCreateMappingFile)
+            if (overrideMappingFile != null && autoCreateMappingFile && defaultMapFile != null)
             {
+                var generatedOverrideMappingFileContents = @"
+# Auto-generated override mapping file
+# Update this file according to your requirements and rerun the parser to modify the resulting Sql query
+# All these columns are set to their current defaults
+";
+                if (useYamlForMaps)
+                    generatedOverrideMappingFileContents += defaultMapFile.GetYaml();
+                else
+                    foreach (var (columnName, dataType) in mapFile.MappedColumns)
+                        generatedOverrideMappingFileContents += $"{columnName.PadRight(64)} |>  {dataType}\n";    
+                
                 overrideMappingFile.WriteAllText(generatedOverrideMappingFileContents);
                 if(!silent)
                     Console.WriteLine($"\n\nOverride mapping file {overrideMappingFile.FullName} created\n");
@@ -247,6 +270,54 @@ namespace JsonResponseToSqlQuery
                 if(listChangedFiles)
                     Console.WriteLine(jsonResponseFile.FullName);
                 
+            }
+
+            bool ParseYamlOverrideFile(FileInfo thisOverrideMappingFile, int n = 0)
+            {
+                if (!thisOverrideMappingFile.Exists)
+                {
+                    Error($"Unable to locate primary override mapping file '{thisOverrideMappingFile.FullName}");
+                    return false;
+                }
+                
+                var localMapFile = MapFile.Load(thisOverrideMappingFile.ReadAllText());
+                if (localMapFile == null)
+                {
+                    Error($"YAML based Mapping file '{thisOverrideMappingFile.FullName} could not be parsed.");
+                    return false;
+                }
+                
+                foreach (var includedFiles in localMapFile.IncludeFiles)
+                {
+                    var includeRefFullPath = Path.GetFullPath(overrideMappingFile.DirectoryName + "/" + includedFiles);
+                    var includedFile = new FileInfo(includeRefFullPath);
+                    if (!includedFile.Exists)
+                    {
+                        Error($"Unable to locate included file '{includeRefFullPath}' defined in {thisOverrideMappingFile.FullName}");
+                        return false;
+                    }
+
+                    if (ParseYamlOverrideFile(includedFile, n + 1) == false)
+                        return false;
+                }
+                
+                foreach (var (columnName, dataType) in localMapFile.MappedColumns)
+                {
+                    if (mapFile.MappedColumns.ContainsKey(columnName))
+                        mapFile.MappedColumns[columnName] = dataType;
+                    else
+                        mapFile.MappedColumns.Add(columnName, dataType);
+
+                    if (mapFile.IgnoredColumns.Contains(columnName))
+                        mapFile.IgnoredColumns.Remove(columnName);
+                }
+                foreach (var ignores in localMapFile.IgnoredColumns.Where(ignores => !mapFile.IgnoredColumns.Contains(ignores)))
+                {
+                    mapFile.IgnoredColumns.Add(ignores);
+                }
+
+                return true;
+
             }
 
             bool ParseOverrideFile(FileInfo thisOverrideMappingFile, int n)
