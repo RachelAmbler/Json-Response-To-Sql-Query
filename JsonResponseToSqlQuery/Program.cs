@@ -55,6 +55,7 @@ namespace JsonResponseToSqlQuery
                 bool useYamlForMaps = true
                 )
         {
+            
             var overrides = new SortedList<string, string>();
             var mapFile = new MapFile();
             
@@ -137,7 +138,9 @@ namespace JsonResponseToSqlQuery
                             queryAliasName,
                             sqlOutputFile == null ? string.Empty:sqlOutputFile.FullName,
                             overrideMappingFile == null ? string.Empty: overrideMappingFile.FullName,
-                            hierarchySeparator);
+                            hierarchySeparator,
+                            string.Empty,
+                            new SortedList<string, string>());
                     
                     solutionFile.Save(projectSolutionFile);
                 }

@@ -135,23 +135,7 @@ Select   *
       var retMapFile = buildMapFile ? MapFile : null;
 
       return new Tuple<string, MapFile>(_sql, retMapFile);
-
-      Tuple<bool, string> CheckMapping(string localizedElementName)
-      {
-        if (string.IsNullOrEmpty(localizedElementName))
-          return new Tuple<bool, string>(false, string.Empty);
-
-        if (!localizedElementName.StartsWith(".")) localizedElementName = "." + localizedElementName;
-
-        if (MapFile.MappedColumns.ContainsKey(localizedElementName))
-          return new Tuple<bool, string>(true, MapFile.MappedColumns[localizedElementName]);
-        return MapFile.IgnoredColumns.Contains(localizedElementName) ? new Tuple<bool, string>(true, string.Empty) : new Tuple<bool, string>(false, string.Empty);
-
-        // if (!Overrides.ContainsKey(localizedElementName)) return new Tuple<bool, string>(false, string.Empty);
-        //var dataType = Overrides[localizedElementName];
-        //return dataType == "*" ? new Tuple<bool, string>(true, string.Empty) : new Tuple<bool, string>(false, dataType);
-
-      }
+      
     }
 
     private void RecursiveParseResponse(JToken token, bool save = false, string parent = "")
