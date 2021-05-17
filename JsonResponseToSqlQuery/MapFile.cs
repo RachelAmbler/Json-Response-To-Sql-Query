@@ -30,7 +30,7 @@ namespace JsonResponseToSqlQuery
             {
                 return deserializer.Deserialize<MapFile>(fileContents);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
